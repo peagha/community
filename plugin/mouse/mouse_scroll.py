@@ -335,6 +335,14 @@ class Actions:
         """Change mouse hiss scroll direction to down"""
         global hiss_scroll_up
         hiss_scroll_up = False
+    
+    def mouse_scroll_down_continuous_amount(amount: float):
+        ""
+        if amount > 0:
+            mouse_scroll_continuous(ScrollingDirection.DOWN, amount*4)
+        if amount < 0:
+            mouse_scroll_continuous(ScrollingDirection.UP, amount*-4)
+            
 
 
 @ctx.action_class("user")

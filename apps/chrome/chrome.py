@@ -46,6 +46,10 @@ class UserActions:
         actions.sleep("180ms")
         actions.app.tab_close()
 
+@ctx.action_class("app")
+class AppActions:
+    def tab_detach():
+        actions.user.menu_select('Tab|Move Tab to New Window')
 
 @ctx.action_class("browser")
 class BrowserActions:
