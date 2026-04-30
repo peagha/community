@@ -5,9 +5,9 @@ tag: user.messaging
 previous (workspace | server): user.messaging_workspace_previous()
 next (workspace | server): user.messaging_workspace_next()
 channel: user.messaging_open_channel_picker()
-channel <user.text>:
-    user.messaging_open_channel_picker()
-    insert(user.formatted_text(user.text, "ALL_LOWERCASE"))
+# channel <user.text>:
+#     user.messaging_open_channel_picker()
+#     insert(user.formatted_text(user.text, "ALL_LOWERCASE"))
 channel up: user.messaging_channel_previous()
 channel down: user.messaging_channel_next()
 [channel] unread last | gopreev: user.messaging_unread_previous()

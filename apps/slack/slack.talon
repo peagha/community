@@ -7,7 +7,7 @@ tag(): user.emoji
 # Workspace
 workspace <number>: user.slack_open_workspace(number)
 # Channel
-(slack | lack) [channel] info: user.slack_show_channel_info()
+# (slack | lack) [channel] info: user.slack_show_channel_info()
 focus (move | next): key(ctrl-`)
 (section | zone) [next]: user.slack_section_next()
 (section | zone) (previous | last): user.slack_section_previous()
@@ -23,8 +23,8 @@ grab right: key(shift-down)
 add line: key(shift-enter)
 
 (slack | lack) (slap | slaw | slapper): edit.line_insert_down()
-(element | bit) [next]: key(tab)
-(element | bit) (previous | last): key(shift-tab)
+(element) [next]: key(tab)
+(element) (previous | last): key(shift-tab)
 
 (slack | lack) (my stuff | activity): user.slack_open_activity()
 (slack | lack) directory: user.slack_open_directory()
@@ -50,7 +50,7 @@ strike | strikethrough: user.slack_toggle_strikethrough()
 (slack | lack) invite: key(a)
 
 # Miscellaneous
-emote <user.text>: ":{text}:"
+# emote <user.text>: ":{text}:"
 (slack | lack) shortcuts: user.slack_open_keyboard_shortcuts()
 toggle left sidebar: user.slack_toggle_left_sidebar()
 toggle right sidebar: user.slack_toggle_right_sidebar()
@@ -65,9 +65,9 @@ toggle right sidebar: user.slack_toggle_right_sidebar()
 (previous | last) (section | zone):
     app.notify("please use the voice command 'section last' instead of 'last section'")
     key(shift-f6)
-[next] (element | bit):
+[next] (element):
     app.notify("please use the voice command 'element next' instead of 'next element'")
     key(tab)
-(previous | last) (element | bit):
+(previous | last) (element):
     app.notify("please use the voice command 'element last' instead of 'last element'")
     key(shift-tab)

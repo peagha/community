@@ -5,7 +5,7 @@
 # also accept strings, e.g. `user.edit_command("delete", "wordLeft")`.
 # See edit_command_modifiers.py to discover the correct string for the modify argument,
 # and `edit_command_actions.py` `simple_action_callbacks` to find strings for the action argument.
-<user.edit_action> <user.edit_modifier>: user.edit_command(edit_action, edit_modifier)
+# <user.edit_action> <user.edit_modifier>: user.edit_command(edit_action, edit_modifier)
 
 # Zoom
 zoom in: edit.zoom_in()
