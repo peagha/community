@@ -11,3 +11,9 @@ paste: pasteFromClipboard
 paste to: pasteFromClipboard
 
 clear: delete
+
+take: select
+pre: goBefore
+post: goAfter
+carve: cutToClipboard
+chuck: delete

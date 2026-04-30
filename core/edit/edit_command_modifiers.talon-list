@@ -12,3 +12,9 @@ file start: fileStart
 way up: fileStart
 file end: fileEnd
 way down: fileEnd
+
+file: document
+head: lineStart
+tail: lineEnd
+head file: fileStart
+tail file: fileEnd
