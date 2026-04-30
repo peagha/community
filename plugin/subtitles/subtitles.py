@@ -62,20 +62,55 @@ setting_y = setting(
     float,
     "Percentage of screen hight to show subtitle at. 0=top, 1=bottom",
 )
+setting_x = setting(
+    "x",
+    float,
+    "Percentage of screen width to right-align subtitle to. 0=left, 1=right. Unset = centered.",
+)
 
 mod = Module()
-canvases: list[Canvas] = []
+# Persistent canvases keyed by screen index — never closed, redrawn empty to avoid macOS slide animation
+_canvases: dict[int, Canvas] = {}
+_current_text: str = ""
+_hide_job = None
 
 
 def show_subtitle(text: str):
     """Show subtitle"""
+    global _current_text, _hide_job
     if not setting_show():
         return
-    clear_canvases()
-    screens = get_screens()
+    if _hide_job:
+        cron.cancel(_hide_job)
+        _hide_job = None
+    _current_text = text
+    _sync_canvases(get_screens())
+    timeout = calculate_timeout(text)
+    _hide_job = cron.after(f"{timeout}ms", _hide_subtitle)
+
+
+def _hide_subtitle():
+    global _current_text, _hide_job
+    _current_text = ""
+    _hide_job = None
+    for canvas in _canvases.values():
+        canvas.freeze()
+
+
+def _sync_canvases(screens: Sequence[ui.Screen]):
+    all_screens = ui.screens()
+    needed = {all_screens.index(s) for s in screens}
+    for idx in list(_canvases.keys()):
+        if idx not in needed:
+            _canvases.pop(idx).close()
     for screen in screens:
-        canvas = show_text_on_screen(screen, text)
-        canvases.append(canvas)
+        idx = all_screens.index(screen)
+        if idx not in _canvases:
+            canvas = Canvas.from_screen(screen)
+            canvas.register("draw", lambda c, s=screen: on_draw(c, s))
+            _canvases[idx] = canvas
+    for canvas in _canvases.values():
+        canvas.freeze()
 
 
 def get_screens() -> Sequence[ui.Screen]:
@@ -94,20 +129,21 @@ def get_screens() -> Sequence[ui.Screen]:
             raise ValueError(f"Unknown screen setting: {screen}")
 
 
-def show_text_on_screen(screen: ui.Screen, text: str):
-    timeout = calculate_timeout(text)
-    canvas = Canvas.from_screen(screen)
-    canvas.register("draw", lambda c: on_draw(c, screen, text))
-    canvas.freeze()
-    cron.after(f"{timeout}ms", canvas.close)
-    return canvas
-
-
-def on_draw(c: SkiaCanvas, screen: ui.Screen, text: str):
+def on_draw(c: SkiaCanvas, screen: ui.Screen):
+    if not _current_text:
+        return
     scale = screen.scale if app.platform != "mac" else 1
     size = setting_size() * scale
-    rect = set_text_size_and_get_rect(c, size, text)
-    x = c.rect.center.x - rect.center.x
+    rect = set_text_size_and_get_rect(c, size, _current_text)
+    x_frac = setting_x()
+    if x_frac is None:
+        x = c.rect.center.x - rect.center.x
+    else:
+        target = c.rect.x + x_frac * c.rect.width
+        x = max(
+            c.rect.x - rect.left,
+            min(c.rect.x + c.rect.width - rect.right, target - rect.right),
+        )
     # Clamp coordinate to make sure entire text is visible
     y = max(
         min(
@@ -120,13 +156,13 @@ def on_draw(c: SkiaCanvas, screen: ui.Screen, text: str):
     c.paint.imagefilter = ImageFilter.drop_shadow(2, 2, 1, 1, "000000")
     c.paint.style = c.paint.Style.FILL
     c.paint.color = setting_color()
-    c.draw_text(text, x, y)
+    c.draw_text(_current_text, x, y)
 
     # Outline
     c.paint.imagefilter = None
     c.paint.style = c.paint.Style.STROKE
     c.paint.color = setting_color_outline()
-    c.draw_text(text, x, y)
+    c.draw_text(_current_text, x, y)
 
 
 def calculate_timeout(text: str) -> int:
@@ -143,9 +179,3 @@ def set_text_size_and_get_rect(c: SkiaCanvas, size: int, text: str) -> Rect:
         if rect.width < c.width * 0.8:
             return rect
         size *= 0.9
-
-
-def clear_canvases():
-    for canvas in canvases:
-        canvas.close()
-    canvases.clear()
